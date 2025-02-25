@@ -70,7 +70,7 @@ app.post("/stk", generateToken, async (req, res) => {
           PartyA: `254${phone}`,
           PartyB: shortcode,
           PhoneNumber: `254${phone}`,
-          CallBackURL: "https://mydomain.com/pat",
+          CallBackURL: "https://4ef5-2c0f-fe38-2185-8106-4e2-1bee-bb5f-bf6b.ngrok-free.app/callback",
           AccountReference: `254${phone}`,
           TransactionDesc: "Test"
         },
@@ -89,4 +89,15 @@ app.post("/stk", generateToken, async (req, res) => {
        res.status(400).json
        {err.message} 
     });
+});
+
+app.post("/callback", (req, res) => {
+    const callbackData = req.body;
+    console.log(callbackData.Body);
+    if(!callbackData.Body.stkCallback.CallbackMetadata) {
+        console.log(callbackData.Body);
+        return res.json("ok"); 
+    }
+
+    console.log(callbackData.Body.stkCallback.CallbackMetadata);
 });
