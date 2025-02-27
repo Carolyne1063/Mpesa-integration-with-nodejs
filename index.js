@@ -1,12 +1,23 @@
 //setting up express server 
 const express = require("express");
+const mongoose = require('mongoose');
 
 const app = express();
 require("dotenv").config();
 const cors = require("cors");
 const axios = require("axios");
 const port = process.env.PORT;
+const Payment = require("./models/paymentModel");
 let token = "";
+
+mongoose
+.connect(process.env.MONGO_URL)
+.then(() => {
+    console.log("database connected successfully");
+})
+.catch((err) => {
+    console.log(err.message);
+});
 
 app.listen(port, () => {
     console.log(`app is running at localhost: ${port}`);
@@ -99,5 +110,29 @@ app.post("/callback", (req, res) => {
         return res.json("ok"); 
     }
 
-    console.log(callbackData.Body.stkCallback.CallbackMetadata);
+    
+    // console.log(callbackData.Body.stkCallback.CallbackMetadata);
+
+    const phone = callbackData.Body.stkCallback.CallbackMetadata.Item[4].Value;
+    const amount = callbackData.Body.stkCallback.CallbackMetadata.Item[0].Value;
+    const trnx_id = callbackData.Body.stkCallback.CallbackMetadata.Item[1].Value;
+
+    console.log({ phone, amount, trnx_id});
+
+    const payment = new Payment();
+
+    payment.number = phone;
+    payment.amount = amount;
+    payment.trnx_id = trnx_id;
+
+    payment
+    .save()
+    .then((data) => {
+        console.log({message: "saved successfully", data});
+        res.status(200).json({ message: "Payment saved", data });
+    })
+    .catch((err) => {
+        console.log(err.message);
+        res.status(500).json({ message: "Error saving payment", error: err.message });
+    });
 });
